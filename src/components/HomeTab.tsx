@@ -1,14 +1,25 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'motion/react';
 import { RotateCcw, Copy, Share2, Info, Scale, ArrowRightLeft } from 'lucide-react';
 import Decimal from 'decimal.js';
 import { toDecimal, formatCurrency, formatNumber } from '../utils/calculations';
 import { translations, Language } from '../utils/i18n';
 
-export default function HomeTab({ lang, currency, weightUnit }: { lang: Language, currency: string, weightUnit: 'g' | 'kg' }) {
+export default function HomeTab({ 
+  lang, 
+  currency, 
+  weightUnit, 
+  setWeightUnit 
+}: { 
+  lang: Language, 
+  currency: string, 
+  weightUnit: 'g' | 'kg',
+  setWeightUnit: (u: 'g' | 'kg') => void
+}) {
   const t = translations[lang];
   const [refWeight, setRefWeight] = useState('1');
   const [refPrice, setRefPrice] = useState('60');
+  const prevUnitRef = useRef(weightUnit);
 
   // New state for integrated calculators
   const [targetWeight, setTargetWeight] = useState('');
@@ -17,7 +28,27 @@ export default function HomeTab({ lang, currency, weightUnit }: { lang: Language
 
   useEffect(() => {
     setTargetWeightUnit(weightUnit);
+    
+    // Convert refWeight when unit changes globally (e.g. from Settings or toggle)
+    if (prevUnitRef.current !== weightUnit) {
+      const currentWeight = toDecimal(refWeight);
+      if (!currentWeight.isZero()) {
+        if (weightUnit === 'kg') {
+          // g -> kg: divide by 1000
+          setRefWeight(currentWeight.div(1000).toString());
+        } else {
+          // kg -> g: multiply by 1000
+          setRefWeight(currentWeight.mul(1000).toString());
+        }
+      }
+      prevUnitRef.current = weightUnit;
+    }
   }, [weightUnit]);
+
+  const toggleWeightUnit = () => {
+    const newUnit = weightUnit === 'g' ? 'kg' : 'g';
+    setWeightUnit(newUnit);
+  };
 
   const reset = () => {
     setRefWeight('');
@@ -88,9 +119,12 @@ export default function HomeTab({ lang, currency, weightUnit }: { lang: Language
                 onChange={(e) => setRefWeight(e.target.value)}
                 className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:border-[#FFD700] transition-all text-xl font-mono"
               />
-              <div className="absolute right-2 top-2 bottom-2 px-3 flex items-center bg-[#FFD700] text-black rounded-lg font-bold text-xs uppercase">
+              <button 
+                onClick={toggleWeightUnit}
+                className="absolute right-2 top-2 bottom-2 px-3 bg-[#FFD700] text-black rounded-lg font-bold text-xs uppercase hover:bg-[#FFC800] transition-colors"
+              >
                 {weightUnit}
-              </div>
+              </button>
             </div>
           </div>
 

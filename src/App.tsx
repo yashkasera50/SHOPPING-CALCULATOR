@@ -92,7 +92,14 @@ export default function App() {
             transition={{ duration: 0.3 }}
             className="max-w-2xl mx-auto"
           >
-            {activeTab === 'home' && <HomeTab lang={lang} currency={currency} weightUnit={weightUnit} />}
+            {activeTab === 'home' && (
+              <HomeTab 
+                lang={lang} 
+                currency={currency} 
+                weightUnit={weightUnit} 
+                setWeightUnit={setWeightUnit} 
+              />
+            )}
             {activeTab === 'batch' && <BatchSheetTab lang={lang} currency={currency} weightUnit={weightUnit} />}
             {activeTab === 'compare' && <CompareTab lang={lang} currency={currency} weightUnit={weightUnit} />}
             {activeTab === 'calc' && <SimpleCalcTab lang={lang} />}
